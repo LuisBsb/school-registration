@@ -5,7 +5,6 @@ import static com.schoolregistration.util.Util.isNull;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.schoolregistration.entity.Course;
 import com.schoolregistration.exception.ValidacaoException;
 import com.schoolregistration.request.RegisterCourse;
 import com.schoolregistration.service.ConsumerService;
@@ -48,6 +46,13 @@ public class CourseController {
     	return consumerService.registerCourse(course);
     }
     
+    @ResponseBody
+    @ResponseStatus(code = HttpStatus.OK)
+    @RequestMapping(value = "/courses", method = RequestMethod.GET)
+    public ResponseEntity<?> courses(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 50) Pageable pageable) {
+        return consumerService.courses(pageable);
+    }
+    
     @GetMapping("/course/{course}")
     public ResponseEntity<?> course(@PathVariable(value = "course") String course) {
     	if(isNull(course) ) {
@@ -56,17 +61,17 @@ public class CourseController {
     	return consumerService.course(course);
     }
     
+    @GetMapping("/coursesWithoutStudent")
+    public ResponseEntity<?> coursesWithoutStudent() {
+    	return consumerService.coursesWithoutStudent();
+    }
+
     @GetMapping("/coursesStudent/{student}")
     public ResponseEntity<?> coursesStudent(@PathVariable(value = "student") Integer student) {
     	if(isNull(student)) {
 			throw new ValidacaoException("Please provide all necessary data.");
     	}
     	return consumerService.coursesStudent(student);
-    }
-    
-    @GetMapping("/coursesWithoutStudent")
-    public ResponseEntity<?> coursesWithoutStudent() {
-    	return consumerService.coursesWithoutStudent();
     }
     
     @DeleteMapping("/removeCourse/{course}")
@@ -83,13 +88,6 @@ public class CourseController {
 			throw new ValidacaoException("Please provide all necessary data.");
     	}
     	return consumerService.updateCourse(newName, course);
-    }
-    
-    @ResponseBody
-    @ResponseStatus(code = HttpStatus.OK)
-    @RequestMapping(value = "/courses", method = RequestMethod.GET)
-    public Page<Course> courses(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 50) Pageable pageable) {
-        return (Page<Course>) consumerService.courses(pageable);
     }
 
 }

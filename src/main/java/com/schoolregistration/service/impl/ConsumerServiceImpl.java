@@ -2,6 +2,7 @@ package com.schoolregistration.service.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,18 +32,37 @@ public class ConsumerServiceImpl implements ConsumerService{
 	private StudentRepository studentRepository;
 	
 	@Override
-	public Page<Course> coursesWithoutStudents(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
-		return courseRepository.findAll(pageable);
+	public ResponseEntity<?> coursesWithoutStudents(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
+		Page<Course> courses = courseRepository.findAll(pageable);
+		
+		if (!courses.hasContent()) {
+			return new ResponseEntity<>(courses, HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>(courses, HttpStatus.OK);
+		}
 	}
 	
 	@Override
-	public Page<Course> courses(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
-		return courseRepository.findAll(pageable);
+	public ResponseEntity<?> courses(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
+		Page<Course> courses = courseRepository.findAll(pageable);
+		
+		if (!courses.hasContent()) {
+			return new ResponseEntity<>(courses, HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>(courses, HttpStatus.OK);
+		}
 	}
 	
 	@Override
-	public Page<Student> students(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
-		return studentRepository.findAll(pageable);
+	public ResponseEntity<?> students(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 100) Pageable pageable) {
+		
+		Page<Student> courses = studentRepository.findAll(pageable);
+		
+		if (!courses.hasContent()) {
+			return new ResponseEntity<>(courses, HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>(courses, HttpStatus.OK);
+		}
 	}
 	
 	@Override
@@ -57,21 +77,19 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}
 		
 		Optional<List<Course>> courseData = courseRepository.findByStudentsIdStudent(studentData.get().getIdStudent());
-		return new ResponseEntity<>(courseData, HttpStatus.CREATED);
+		return new ResponseEntity<>(courseData, HttpStatus.OK);
 		
 	}
 
 	@Override
 	public ResponseEntity<?> coursesWithoutStudent() {
-		List<Course> courseData = courseRepository.findAll();
-		courseData.removeIf(x -> !x.getStudents().isEmpty()); 
+		List<Course> courseData = courseRepository.findAll().stream().filter( e-> {return e.getStudents() == null || e.getStudents().isEmpty();}).collect(Collectors.toList());
 		return new ResponseEntity<>(courseData, HttpStatus.OK);
 	}
 	
 	@Override
 	public ResponseEntity<?> studentsWithoutCourse() {
-		List<Student> studentData = studentRepository.findAll();
-		studentData.removeIf(x -> !x.getLikedCourses().isEmpty()); 
+		List<Student> studentData = studentRepository.findAll().stream().filter( e-> {return e.getLikedCourses() == null || e.getLikedCourses().isEmpty();}).collect(Collectors.toList());
 		return new ResponseEntity<>(studentData, HttpStatus.OK);
 	}
 	
@@ -85,7 +103,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 			errorMessage = "Course not found with description:" + course;
 			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
 		} else {
-			Optional<Student> studentData = studentRepository.findByLikedCoursesIdCourse(courseData.get().getIdCourse());
+			Optional<List<Student>> studentData = studentRepository.findByLikedCoursesIdCourse(courseData.get().getIdCourse());
 			return new ResponseEntity<>(studentData, HttpStatus.OK);
 		}
 	}
@@ -211,11 +229,10 @@ public class ConsumerServiceImpl implements ConsumerService{
 		Optional<Course> courseData = null;
 		
 		studentData = studentRepository.findByRegistration(likedCourses.getRegistration());
-
-		courseData = courseRepository.findByDescription(likedCourses.getCourse());
+		courseData = courseRepository.findByDescription(likedCourses.getCourse().toUpperCase());
 		
 		if ( studentData.isPresent() ) {
-			if( studentData.get().getLikedCourses().size() == 5 ) {
+			if( studentData.get().getLikedCourses() != null && !studentData.get().getLikedCourses().isEmpty() &&  studentData.get().getLikedCourses().size() == 5 ) {
 				errorMessage = "Student has reached the limit of courses.";
 			}
 		} else {
@@ -223,7 +240,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}
 		
 		if ( courseData.isPresent() ) {
-			if( courseData.get().getStudents().size() == 50 ) {
+			if( courseData.get().getStudents()!= null && !courseData.get().getStudents().isEmpty() && courseData.get().getStudents().size() == 50 ) {
 				errorMessage = "Courses has reached the limit of students.";
 			}
 		} else {
@@ -233,7 +250,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 		if( !errorMessage.isEmpty() ) {
 			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
 		} else {
-			studentData.get().addCourse(courseData.get());
 			courseData.get().addStudent(studentData.get());
 			courseRepository.save(courseData.get());
 			return new ResponseEntity<>(likedCourses, HttpStatus.CREATED);

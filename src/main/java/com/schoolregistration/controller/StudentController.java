@@ -5,7 +5,6 @@ import static com.schoolregistration.util.Util.isNull;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.schoolregistration.entity.Student;
 import com.schoolregistration.exception.ValidacaoException;
 import com.schoolregistration.request.RegisterLikedCourses;
 import com.schoolregistration.request.RegisterStudent;
@@ -45,6 +43,11 @@ public class StudentController {
     	return consumerService.registerStudent(student);
     }
     
+    @GetMapping("/students")
+    public ResponseEntity<?> students(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 50) Pageable pageable) {
+        return consumerService.students(pageable);
+    }
+    
     @GetMapping("/student/{registration}")
     public ResponseEntity<?> student(@PathVariable(value = "registration") Integer registration) {
     	if(isNull(registration) ) {
@@ -56,11 +59,6 @@ public class StudentController {
     @GetMapping("/studentsWithoutCourse")
     public ResponseEntity<?> studentsWithoutCourse() {
     	return consumerService.studentsWithoutCourse();
-    }
-    
-    @GetMapping("/students")
-    public Page<Student> students(@PageableDefault(direction = Sort.Direction.ASC,page = 0, size = 50) Pageable pageable) {
-        return (Page<Student>) consumerService.students(pageable);
     }
     
     @GetMapping("/students/{course}")

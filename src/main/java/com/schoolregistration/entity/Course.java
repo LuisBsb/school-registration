@@ -1,5 +1,6 @@
 package com.schoolregistration.entity;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -12,8 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
@@ -49,7 +48,7 @@ public class Course {
 		          CascadeType.MERGE
 		      },
 		      mappedBy = "likedCourses")
-	private Set<Student> students;
+	private Set<Student> students = new HashSet<>();
 
 	public String getDescription() {
 		return description;

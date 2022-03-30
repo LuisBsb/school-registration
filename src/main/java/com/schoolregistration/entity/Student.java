@@ -1,5 +1,6 @@
 package com.schoolregistration.entity;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -58,7 +59,7 @@ public class Student {
 			joinColumns = @JoinColumn(name = "STUDENT_IDSTUDENT", referencedColumnName = "idStudent"), 
 			inverseJoinColumns = @JoinColumn(name = "COURSE_IDCOURSE", referencedColumnName = "idCourse"))
 	@JsonIgnore
-	private Set<Course> likedCourses;
+	private Set<Course> likedCourses = new HashSet<>();
 
 	public String getName() {
 		return name;
@@ -74,14 +75,6 @@ public class Student {
 
 	public void setRegistration(Integer registration) {
 		this.registration = registration;
-	}
-
-	public Set<Course> getLikedCourses() {
-		return likedCourses;
-	}
-
-	public void setLikedCourses(Set<Course> likedCourses) {
-		this.likedCourses = likedCourses;
 	}
 
 	public void addCourse(Course course) {
@@ -101,6 +94,14 @@ public class Student {
 
 	public void setIdStudent(Integer idStudent) {
 		this.idStudent = idStudent;
+	}
+
+	public Set<Course> getLikedCourses() {
+		return likedCourses;
+	}
+
+	public void setLikedCourses(Set<Course> likedCourses) {
+		this.likedCourses = likedCourses;
 	}
 
 }

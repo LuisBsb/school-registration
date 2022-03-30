@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'schoolregistration'
+      MYSQL_DATABASE: 'schoolregistration'
+    ports: 
+      - 3306:3306
+    cap_add:
+      - SYS_NICE
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer_container
+    ports:
+      - 8080:8080
